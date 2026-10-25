@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Центр дослідження локальних аномалій — База фігурантів</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<style>
+  body{background:#030712;color:#e5e7eb;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.015) 0 1px,transparent 1px 3px)}
+  .ticker{display:inline-block;white-space:nowrap;padding-left:100%;animation:tick 40s linear infinite}
+  @keyframes tick{to{transform:translateX(-100%)}}
+  @media (prefers-reduced-motion:reduce){.ticker{animation:none;padding-left:0}}
+  .stamp{border:2px solid;transform:rotate(-4deg);display:inline-block}
+  .bar>i{display:block;height:100%;width:0;transition:width .9s ease}
+  :focus-visible{outline:2px solid #eab308;outline-offset:2px}
+</style>
+</head>
+<body class="font-mono min-h-screen">
+
+<header class="border-b-2 border-red-600 bg-[#0f172a]">
+  <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center gap-4">
+    <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true" class="shrink-0">
+      <path d="M32 3 58 12v22c0 14-11 23-26 27C17 57 6 48 6 34V12z" fill="#030712" stroke="#dc2626" stroke-width="3"/>
+      <circle cx="32" cy="28" r="11" fill="none" stroke="#eab308" stroke-width="3"/>
+      <circle cx="32" cy="28" r="3" fill="#eab308"/>
+      <path d="M32 14v6M32 36v6M18 28h6M40 28h6" stroke="#eab308" stroke-width="2"/>
+    </svg>
+    <div class="flex-1 min-w-[240px]">
+      <h1 class="text-lg sm:text-2xl font-bold text-yellow-500 leading-tight">Центр дослідження локальних аномалій та загрози суспільству</h1>
+      <p class="text-xs text-gray-400">Реєстр фігурантів · внутрішній архів №0001</p>
+    </div>
+    <div class="flex flex-col gap-2 items-end">
+      <span class="stamp border-red-600 text-red-500 px-3 py-1 font-bold text-sm">СЕКРЕТНО</span>
+      <span class="stamp border-yellow-500 text-yellow-500 px-3 py-1 font-bold text-xs">ОСОБЛИВО НЕДОПУСТИМІ</span>
+    </div>
+  </div>
+  <div class="bg-red-700 text-white text-sm overflow-hidden py-1 flex">
+    <span class="bg-black text-yellow-400 px-3 font-bold shrink-0 z-10">ОСТАННІ ОПЕРАТИВНІ ЗВЕДЕННЯ</span>
+    <div class="overflow-hidden flex-1"><span class="ticker">
+      ⚠ Квадроцикл Ростислава зафіксовано біля двору Семенівни — кури вимагають пояснень ◆ Остап знову розвалив дисципліну за 3 секунди — рекорд збережено ◆ Віталій подолав Тису: польські вишивки отримали нового абітурієнта ◆ Корова знеслася — курка дає молоко — комісія працює ◆ Директор школи в Краковці пішов у відставку — електросамокат не коментує ◆ Дмитро «Пес» знову в чорному списку чийогось месенджера — гроші не знайдено ◆ У Янові тріснули дзеркала — Назар знову без баби ◆ Штанга 20 кг затримала Миколу на місці — оперативна група задоволена ◆
+    </span></div>
+  </div>
+  <nav class="max-w-6xl mx-auto px-4 flex gap-1 text-sm" aria-label="Розділи">
+    <button data-tab="home" class="tab px-4 py-2 border-b-2">Головна / База фігурантів</button>
+    <button data-tab="news" class="tab px-4 py-2 border-b-2">Новини</button>
+    <button data-tab="report" class="tab px-4 py-2 border-b-2">Анонімний донос</button>
+  </nav>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 py-6">
+
+  <!-- ГОЛОВНА -->
+  <section id="home" class="tabpane">
+    <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
+      <div class="border border-red-600 bg-red-950/30 px-5 py-3">
+        <div class="text-xs text-gray-400">РОЗШУКУЮТЬСЯ ФІГУРАНТІВ</div>
+        <div class="text-4xl font-bold text-red-500" id="counter">7</div>
+      </div>
+      <div class="flex-1 min-w-[260px] max-w-xl">
+        <label for="search" class="sr-only">Пошук по картках</label>
+        <input id="search" type="search" placeholder="Пошук за ПІБ або ключовим словом досьє…" class="w-full bg-[#0f172a] border border-gray-600 focus:border-yellow-500 px-3 py-2 text-sm placeholder-gray-500">
+        <div class="flex flex-wrap gap-2 mt-2 text-xs" id="filters"></div>
+      </div>
+    </div>
+    <div id="grid" class="grid gap-5 md:grid-cols-3"></div>
+    <p id="empty" class="hidden text-center text-yellow-500 py-12 border border-dashed border-yellow-600 mt-4">За вашим запитом фігурантів не виявлено. Змініть запит або скиньте фільтр.</p>
+  </section>
+
+  <!-- ДОНОС -->
+  <section id="report" class="tabpane hidden">
+    <div class="max-w-2xl mx-auto border border-yellow-600 bg-[#0f172a] p-6">
+      <h2 class="text-xl font-bold text-yellow-500 mb-1">Анонімний донос</h2>
+      <p class="text-sm text-gray-400 mb-5">Громадянине, ваша пильність цінується. Усі повідомлення розглядаються вкрай серйозно та з абсолютно непроникним виразом обличчя.</p>
+      <form id="reportForm" class="space-y-4" novalidate>
+        <div>
+          <label for="who" class="block text-sm mb-1">На кого донос</label>
+          <input id="who" required class="w-full bg-black border border-gray-600 focus:border-yellow-500 px-3 py-2 text-sm" placeholder="Прізвище, ім'я, позивний">
+        </div>
+        <div>
+          <label for="what" class="block text-sm mb-1">Опис злочину</label>
+          <textarea id="what" rows="5" required class="w-full bg-black border border-gray-600 focus:border-yellow-500 px-3 py-2 text-sm" placeholder="Місце, час, кількість свідків-курей…"></textarea>
+        </div>
+        <p id="formErr" class="hidden text-red-500 text-sm">Заповніть обидва поля: без імені й суті справу відкрити неможливо.</p>
+        <button class="bg-red-600 hover:bg-red-500 text-white font-bold px-5 py-2">Надіслати в спецархів</button>
+      </form>
+      <div id="formOk" class="hidden mt-5 border border-green-600 bg-green-950/30 p-4 text-sm text-green-400"></div>
+    </div>
+  </section>
+
+  <!-- НОВИНИ -->
+  <section id="news" class="tabpane hidden">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-xl font-bold text-yellow-500 mb-1">Оперативні новини</h2>
+      <p class="text-sm text-gray-400 mb-5">Публікуйте термінові зведення з місць подій. Усе зберігається лише в пам'яті вашого браузера.</p>
+
+      <form id="newsForm" class="border border-red-600 bg-[#0f172a] p-5 space-y-4" novalidate>
+        <div>
+          <label for="ntitle" class="block text-sm mb-1">Заголовок новини</label>
+          <input id="ntitle" maxlength="140" class="w-full bg-black border border-gray-600 focus:border-yellow-500 px-3 py-2 text-sm" placeholder="Терміново! Квадроцикл Ростислава помічено в центрі села">
+        </div>
+        <div>
+          <label for="ntext" class="block text-sm mb-1">Текст новини / репортаж</label>
+          <textarea id="ntext" rows="5" maxlength="2000" class="w-full bg-black border border-gray-600 focus:border-yellow-500 px-3 py-2 text-sm" placeholder="Що, де, коли і скільки курей було свідками…"></textarea>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label for="nfile" class="block text-sm mb-1">Фото (файл з пристрою)</label>
+            <input id="nfile" type="file" accept="image/*" class="w-full text-xs text-gray-400 file:mr-3 file:border file:border-yellow-500 file:bg-black file:text-yellow-500 file:px-3 file:py-1 file:cursor-pointer">
+          </div>
+          <div>
+            <label for="nurl" class="block text-sm mb-1">або посилання на зображення</label>
+            <input id="nurl" type="url" class="w-full bg-black border border-gray-600 focus:border-yellow-500 px-3 py-2 text-sm" placeholder="https://…">
+          </div>
+        </div>
+        <div id="nprev" class="hidden"><img id="nprevImg" alt="Попередній перегляд фото" class="max-h-40 border border-yellow-600"></div>
+        <div>
+          <label for="nauthor" class="block text-sm mb-1">Автор</label>
+          <input id="nauthor" list="authors" maxlength="40" class="w-full sm:w-1/2 bg-black border border-gray-600 focus:border-yellow-500 px-3 py-2 text-sm" placeholder="Оперативник / Анонім">
+          <datalist id="authors"><option value="Оперативник"><option value="Анонім"></datalist>
+        </div>
+        <p id="nerr" class="hidden text-red-500 text-sm"></p>
+        <button class="bg-red-600 hover:bg-red-500 text-white font-bold px-5 py-2">Опублікувати зведення</button>
+      </form>
+
+      <div class="flex items-center justify-between mt-8 mb-3">
+        <h3 class="text-yellow-500 font-bold">Стрічка зведень <span id="ncount" class="text-gray-500 text-sm"></span> <span id="nmode" class="ml-2 text-xs"></span></h3>
+      </div>
+      <div id="feed" class="space-y-5"></div>
+      <p id="nempty" class="hidden text-center text-yellow-500 py-10 border border-dashed border-yellow-600">Зведень поки немає. Опублікуйте перше за формою вище.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="border-t border-gray-800 text-center text-xs text-gray-500 py-6 px-4">
+  Усі збіги випадкові, кури й корови — вигадані. Сайт створено суто для жарту.
+</footer>
+
+<!-- МОДАЛКА ДОСЬЄ -->
+<div id="modal" class="hidden fixed inset-0 z-50 bg-black/80 overflow-y-auto p-4" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div id="mBox" class="max-w-3xl mx-auto bg-[#0f172a] border-2 border-red-600 relative">
+    <button id="mClose" class="absolute top-2 right-3 text-2xl text-gray-400 hover:text-white" aria-label="Закрити">×</button>
+    <div id="mBody" class="p-6"></div>
+  </div>
+</div>
+
+<script>
+const DATA = [
+  { id:1, name:"Кропивницький Остап", dob:null, img:"ostap.jpg", alt:"Фото фігуранта: Кропивницький Остап",
+    badge:"ГОЛОВНИЙ ФІГУРАНТ / ОСОБЛИВО СМІШНИЙ", cat:"humor", color:"red",
+    dossier:"Засновник аномальної активності в базі. Володіє зброєю масового гумору, здатний розвалити дисципліну в будь-якій компанії за 3 секунди.",
+    meters:[["Рівень сміху Остапа",98,"%"]],
+    proofs:["Свідчення №1: тиха нарада перетворилась на концерт за 3 секунди (секундомір не бреше).","Свідчення №2: вчитель вдруге за урок «зненацька закашлявся».","Експертний висновок: зброя гумору — без дозволу, без глушника."] },
+  { id:2, name:"Грубас Ростислав Миколайович", dob:"14 серпня 2010 року", img:"rostyslav.jpg", alt:"Фото фігуранта: Грубас Ростислав Миколайович",
+    badge:"ТЕРОР СІЛЬСЬКОГО ГОСПОДАРСТВА", cat:"agro", color:"yellow",
+    dossier:"Фігурант пересувається на аномально гучному квадроциклі. Внаслідок його заїздів у сусідки Семенівни стався локальний збій законів фізики: кури перестали доїтися, а корова перестала нестися (корова знеслася, а курка дає молоко).",
+    meters:[["Рівень гучності квадроцикла",94,"дБ-ів умовних"],["Рівень шоку Семенівни",87,"%"]],
+    proofs:["Доказ А: яйце, знесене коровою (збережено в холодильнику Семенівни).","Доказ Б: курка, що дає молоко, відмовляється від співбесід.","Доказ В: аудіозапис квадроцикла — мембрана мікрофона не вижила."] },
+  { id:3, name:"Лега Віталій Помідорович", dob:"28 лютого 2010 року", img:"vitaliy.jpg", alt:"Фото фігуранта: Лега Віталій Помідорович",
+    badge:"МІЖНАРОДНИЙ ПЛАВЕЦЬ-СТУДЕНТ", cat:"sport", color:"yellow",
+    dossier:"Здійснив безпрецедентний заплив через річку Тиса з метою втечі до Польщі заради здобуття вищої освіти.",
+    meters:[["Дистанція запливу",72,"% ширини Тиси подолано з ентузіазмом"]],
+    proofs:["Доказ А: мокрий конспект, знайдений на польському березі.","Доказ Б: рекорд швидкості «від лекції до лекції» — вплав.","Висновок: прагнення до знань у наявності, прикордонний кордон — в шоці."] },
+  { id:4, name:"Зубович Дмитро «Пес»", dob:"Літо 2010 року", img:"dima.jpg", alt:"Фото фігуранта: Зубович Дмитро «Пес»",
+    badge:"ФІНАНСОВИЙ АНОМАЛ ТА МАНІПУЛЯТОР", cat:"fin", color:"red",
+    dossier:"Аномально нападає на людей та зникає безвісти. Володіє майстерністю фінансового лутання: професійно виманює гроші з друзів, після чого миттєво відправляє їх у чорний список (блокає). Зафіксовані факти дивного проведення часу в закладах ЮБІ.",
+    meters:[["Рівень лутання грошей",91,"%"],["Швидкість блокування в соцмережах",99,"% (швидше за світло)"]],
+    proofs:["Доказ А: скріншот «Ви не можете надіслати повідомлення цьому користувачу».","Доказ Б: час між «позич, віддам завтра» та блокуванням — 0,4 секунди.","Доказ В: відвідування закладів ЮБІ — мета візитів встановлюється."] },
+  { id:5, name:"Кісіль Давид Кісільович", dob:null, img:"david.jpg", alt:"Фото фігуранта: Кісіль Давид Кісільович",
+    badge:"ОСОБЛИВО БЕЗПЕЧНИЙ ДЛЯ СУСПІЛЬСТВА", cat:"road", color:"green",
+    dossier:"Має двох вихователів-бодібілдерів. Аномально пересувається на електросамокаті в Краковці. Його стихійне катання призвело до того, що директор місцевої школи добровільно пішов у відставку. Ходить на бокс, проте замість тренувань використовується спаринг-партнерами як м'яка боксерська груша, вбираючи всі удари як шмата.",
+    meters:[["Децибели катання на самокаті в Краковці",89,"дБ-ів умовних"],["Рівень впитання ударів на боксі",96,"% (як шмата)"]],
+    proofs:["Доказ А: заява директора школи «за власним бажанням» — рука тремтіла.","Доказ Б: двоє вихователів-бодібілдерів підтверджують: «він просто їздить».","Доказ В: спаринг-партнери стверджують, що груша втомлюється першою — але не він."] },
+  { id:6, name:"Ґудзік Назар", dob:null, img:"nazar.jpg", alt:"Фото фігуранта: Ґудзік Назар",
+    badge:"НОКІЯ-ФОТОГРАФ ТА НІЧНИЙ КРИЧУН", cat:"photo", color:"red",
+    dossier:"Озброєний апаратом Sony Alpha 7 Mark II. Його спалах створює аномальний ефект: з глибокої ночі робиться день, при цьому якість знімків гірша за стару Nokia. Грає в «Танки» 24/7. Має вразливість до дівчат — при їх появі починає плакати і втікати, проте повністю продається за 3 шаурми і йде гуляти. Змушений їздити до баби в Любинь, бо без неї починає спати і кричати на 96 дБ-ів, від чого тріскають усі дзеркала в Янові.",
+    meters:[["Гучність нічного крику в Любинях (дБ)",96,"дБ"],["Кількість з'їденої шаурми за побачення",100,"% (3 шаурми = повна капітуляція)"],["Вразливість до дівчат",97,"% (втеча гарантована)"]],
+    proofs:["Доказ А: фото «денної» ночі — Nokia 3310 у сльозах заздрості.","Доказ Б: акт про тріщини у всіх дзеркалах Янова (96 дБ, комісія зафіксувала).","Доказ В: чек на 3 шаурми — єдиний документ, що змінює його плани."] },
+  { id:7, name:"Лега Микола Помідорович (молодший брат Віталія)", dob:null, img:"mykola.jpg", alt:"Фото фігуранта: Лега Микола Помідорович",
+    badge:"АШТАНГА-КУРИЛЬЩИК ТА ШТАНГОВИЙ ЗАТРИМАНИЙ", cat:"gym", color:"yellow",
+    dossier:"Влітку на Курчунку випиває абсолютно все спиртне (не лишаючи ні грама) і викурює все, що куриться, а що не куриться — розкурює. Віртуозно дзвонить Галині Петрівні, і розмови тривають годинами. Нещодавно почав займатися йогою «Аштанга» та пішов у зал, де його придавила штанга вагою 20 кг, чим оперативна група одразу скористалася для затримання.",
+    meters:[["Об'єм випитого спиртного на Курчунку",100,"% (жодного грама не залишено)"],["Рівень розкурювання нерозкурюваного",93,"%"],["Стійкість під 20-кілограмовою штангою",8,"% (затримано в горизонтальному положенні)"]],
+    proofs:["Доказ А: порожня тара на Курчунку — лічильник збився після першої сотні.","Доказ Б: штанга 20 кг, що притиснула фігуранта, — речовий доказ №1.","Доказ В: протокол затримання складено прямо на килимку для аштанги."] }
+];
+const CATS = {all:"Усі", humor:"Гумор", agro:"Агросектор", sport:"Водні види", fin:"Фінанси", road:"Самокат і бокс", photo:"Фото й крик", gym:"Курчунок і зал"};
+const col = c => c==="red" ? ["border-red-600","text-red-500","bg-red-600","text-white"]
+  : c==="green" ? ["border-green-500","text-green-400","bg-green-500","text-black"]
+  : ["border-yellow-500","text-yellow-500","bg-yellow-500","text-black"];
+const GLOW = "border-2 shadow-[0_0_15px_rgba(34,197,94,0.3)]";
+
+const esc = s => String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+let cat = "all";
+
+function photo(p, cls){
+  return `<div class="${cls} bg-gray-800 relative overflow-hidden">
+    <img src="${p.img}" alt="${esc(p.alt)}" class="w-full h-full object-cover grayscale contrast-125"
+      onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('div'),{className:'w-full h-full flex flex-col items-center justify-center bg-gray-700 text-gray-400 text-xs text-center',innerHTML:'<svg width=\\'64\\' height=\\'64\\' viewBox=\\'0 0 24 24\\' fill=\\'#6b7280\\'><circle cx=\\'12\\' cy=\\'8\\' r=\\'4\\'/><path d=\\'M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8z\\'/></svg>ФОТО ЗАСЕКРЕЧЕНО'}))">
+  </div>`;
+}
+
+function render(){
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  const list = DATA.filter(p => (cat==="all"||p.cat===cat) && (p.name+p.dossier+p.badge).toLowerCase().includes(q));
+  document.getElementById('grid').innerHTML = list.map(p => {
+    const [b,t,bg,fg] = col(p.color);
+    return `<article class="bg-[#0f172a] border ${b} ${p.color==='green'?GLOW:''} flex flex-col">
+      ${photo(p,'h-64')}
+      <div class="p-4 flex flex-col gap-3 flex-1">
+        <span class="${bg} ${fg} text-xs font-bold px-2 py-1 self-start">${p.badge}</span>
+        <h3 class="text-lg font-bold ${t}">${p.name}</h3>
+        ${p.dob?`<div class="text-xs text-gray-400">Дата народження: ${p.dob}</div>`:''}
+        <p class="text-sm text-gray-300 flex-1">${p.dossier}</p>
+        <button data-open="${p.id}" class="border ${b} ${t} hover:${bg} hover:text-black px-3 py-2 text-sm font-bold">Детальне досьє</button>
+      </div></article>`;
+  }).join('');
+  document.getElementById('empty').classList.toggle('hidden', list.length>0);
+  document.getElementById('counter').textContent = DATA.length;
+}
+
+function renderFilters(){
+  document.getElementById('filters').innerHTML = Object.entries(CATS).map(([k,v]) =>
+    `<button data-cat="${k}" class="px-3 py-1 border ${k===cat?'bg-yellow-500 text-black border-yellow-500':'border-gray-600 text-gray-300'}">${v}</button>`).join('');
+}
+
+function openModal(id){
+  const p = DATA.find(x=>x.id===id); const [b,t] = col(p.color);
+  document.getElementById('mBox').className = 'max-w-3xl mx-auto bg-[#0f172a] relative ' +
+    (p.color==='green' ? 'border-2 border-green-500 shadow-[0_0_25px_rgba(34,197,94,0.4)]' : 'border-2 border-red-600');
+  document.getElementById('mBody').innerHTML = `
+    <div class="flex flex-wrap gap-5">
+      ${photo(p,'w-40 h-52 shrink-0 border '+b)}
+      <div class="flex-1 min-w-[200px]">
+        <div class="text-xs ${p.color==='green'?'text-green-400':'text-red-500'} font-bold mb-1">ДОСЬЄ №${String(p.id).padStart(4,'0')} · ${p.color==='green'?'ПЕРЕВІРЕНО: БЕЗПЕЧНИЙ (ІРОНІЧНО)':'СЕКРЕТНО'}</div>
+        <h2 id="mTitle" class="text-xl font-bold ${t} mb-1">${p.name}</h2>
+        ${p.dob?`<div class="text-xs text-gray-400 mb-2">Дата народження: ${p.dob}</div>`:''}
+        <span class="text-xs font-bold border ${b} ${t} px-2 py-1 inline-block mb-3">${p.badge}</span>
+        <p class="text-sm text-gray-300">${p.dossier}</p>
+      </div>
+    </div>
+    <h3 class="text-yellow-500 font-bold mt-6 mb-2">Характеристики</h3>
+    <div class="space-y-3">${p.meters.map(m=>`
+      <div><div class="flex justify-between text-xs mb-1"><span>${m[0]}</span><span class="${t}">${m[1]} ${m[2]}</span></div>
+      <div class="bar h-3 bg-gray-800 border border-gray-700"><i class="${p.color==='red'?'bg-red-600':p.color==='green'?'bg-green-500':'bg-yellow-500'}" data-w="${m[1]}"></i></div></div>`).join('')}
+    </div>
+    <h3 class="text-yellow-500 font-bold mt-6 mb-2">Докази</h3>
+    <ul class="space-y-2 text-sm">${p.proofs.map(x=>`<li class="border-l-4 border-red-600 bg-black/40 px-3 py-2">${x}</li>`).join('')}</ul>`;
+  const m = document.getElementById('modal'); m.classList.remove('hidden'); document.body.style.overflow='hidden';
+  requestAnimationFrame(()=>document.querySelectorAll('.bar>i').forEach(i=>i.style.width=i.dataset.w+'%'));
+  document.getElementById('mClose').focus();
+}
+function closeModal(){ document.getElementById('modal').classList.add('hidden'); document.body.style.overflow=''; }
+
+function showTab(name){
+  document.querySelectorAll('.tabpane').forEach(s=>s.classList.toggle('hidden', s.id!==name));
+  document.querySelectorAll('.tab').forEach(b=>{
+    const on = b.dataset.tab===name;
+    b.className = 'tab px-4 py-2 border-b-2 ' + (on?'border-yellow-500 text-yellow-500':'border-transparent text-gray-400 hover:text-white');
+  });
+}
+
+document.addEventListener('click', e=>{
+  const o = e.target.closest('[data-open]'); if(o) openModal(+o.dataset.open);
+  const c = e.target.closest('[data-cat]'); if(c){ cat=c.dataset.cat; renderFilters(); render(); }
+  const t = e.target.closest('[data-tab]'); if(t) showTab(t.dataset.tab);
+  if(e.target.id==='modal') closeModal();
+});
+document.getElementById('mClose').addEventListener('click', closeModal);
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+document.getElementById('search').addEventListener('input', render);
+
+document.getElementById('reportForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const who = document.getElementById('who').value.trim(), what = document.getElementById('what').value.trim();
+  const err = document.getElementById('formErr'), ok = document.getElementById('formOk');
+  if(!who||!what){ err.classList.remove('hidden'); ok.classList.add('hidden'); return; }
+  err.classList.add('hidden');
+  const n = Math.floor(Math.random()*9000+1000);
+  ok.textContent = `Донос №${n} на «${who}» прийнято до спецархіву. Автора встановлено не буде (курей уже опитали). Дякуємо за пильність.`;
+  ok.classList.remove('hidden'); e.target.reset();
+});
+
+renderFilters(); render(); showTab('home');
+</script>
+<script>
+(function(){
+  'use strict';
+  var KEY = 'mirotvorets_news_v1';
+  var $ = function(id){ return document.getElementById(id); };
+  var esc = function(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(m){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); };
+  var safeImg = function(u){ return /^(https?:\/\/|data:image\/)/i.test(u || ''); };
+
+  var storageOk = (function(){ try { localStorage.setItem('__t','1'); localStorage.removeItem('__t'); return true; } catch(e){ return false; } })();
+  var news = [];
+  try { news = JSON.parse(localStorage.getItem(KEY) || '[]'); if(!Array.isArray(news)) news = []; } catch(e){ news = []; }
+  function persist(){ if(!storageOk) return false; try { localStorage.setItem(KEY, JSON.stringify(news)); return true; } catch(e){ return false; } }
+
+  var pending = null; // Promise<string|null>: Base64 обраного файлу
+
+  // ---- Спільна стрічка: якщо знайдено сервер (server.js), новини живуть там ----
+  var base = (window.NEWS_API || '/api/news').replace(/\/$/, ''), server = false;
+  var likedSet = []; try { likedSet = JSON.parse(localStorage.getItem('mirotvorets_liked') || '[]'); } catch(e){}
+  function saveLiked(){ try { localStorage.setItem('mirotvorets_liked', JSON.stringify(likedSet)); } catch(e){} }
+  function isLiked(n){ return likedSet.indexOf(n.id) > -1; }
+  function api(method, path, body){
+    return fetch(base + path, { method: method, headers: {'Content-Type':'application/json'}, cache: 'no-store',
+      body: body ? JSON.stringify(body) : undefined }).then(function(r){ if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+  }
+  function pull(){ return api('GET', '').then(function(a){ if(!Array.isArray(a)) throw new Error('bad'); news = a; server = true; render(); }); }
+
+  function msg(text, ok){
+    var el = $('nerr'); if(!el) return;
+    if(!text){ el.classList.add('hidden'); return; }
+    el.textContent = text;
+    el.className = 'text-sm ' + (ok ? 'text-green-400' : 'text-red-500');
+  }
+
+  // Файл -> Base64 (FileReader) -> стиснення через canvas, щоб влізти в localStorage
+  function fileToBase64(file){
+    return new Promise(function(resolve, reject){
+      var r = new FileReader();
+      r.onload = function(){ resolve(r.result); };
+      r.onerror = function(){ reject(r.error || new Error('read')); };
+      r.readAsDataURL(file);
+    });
+  }
+  function shrink(dataUrl, max, q){
+    return new Promise(function(resolve){
+      var im = new Image();
+      im.onload = function(){
+        try {
+          var k = Math.min(1, max / Math.max(im.width, im.height));
+          var c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round(im.width * k)); c.height = Math.max(1, Math.round(im.height * k));
+          c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+          resolve(c.toDataURL('image/jpeg', q));
+        } catch(e){ resolve(dataUrl); }
+      };
+      im.onerror = function(){ resolve(dataUrl); };
+      im.src = dataUrl;
+    });
+  }
+  function prepare(file){
+    return fileToBase64(file).then(function(b64){
+      if(!/^data:image\//i.test(b64)) throw new Error('not image');
+      return shrink(b64, 900, 0.75);
+    });
+  }
+
+  function placeholder(){
+    var d = document.createElement('div');
+    d.className = 'h-40 flex flex-col items-center justify-center bg-gray-800 text-gray-500 text-xs border-b border-gray-700';
+    d.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="#6b7280"><path d="M4 5h16v14H4z M6 17l4-5 3 4 2-2 3 3z" fill-rule="evenodd"/></svg>ФОТО ЗАСЕКРЕЧЕНО';
+    return d;
+  }
+
+  function render(){
+    var feed = $('feed'); if(!feed) return;
+    feed.innerHTML = news.map(function(n){
+      return '<article class="bg-[#0f172a] border border-gray-700 hover:border-yellow-600">' +
+        (n.img && safeImg(n.img)
+          ? '<img src="' + esc(n.img) + '" alt="Фото до новини" class="news-img w-full max-h-80 object-cover border-b border-gray-700">'
+          : '<div class="news-ph"></div>') +
+        '<div class="p-4"><h4 class="text-lg font-bold text-red-500 mb-2">' + esc(n.title) + '</h4>' +
+        '<p class="text-sm text-gray-300 whitespace-pre-line break-words">' + esc(n.text) + '</p>' +
+        '<div class="flex flex-wrap items-center justify-between gap-3 mt-4 pt-3 border-t border-gray-800 text-xs">' +
+        '<div class="text-gray-400">Автор: <span class="text-yellow-500">' + esc(n.author) + '</span> · ' + esc(n.date) + '</div>' +
+        '<div class="flex gap-2">' +
+        '<button type="button" data-like="' + n.id + '" class="border px-3 py-1 ' + (isLiked(n) ? 'bg-yellow-500 text-black border-yellow-500' : 'border-yellow-500 text-yellow-500') + '">' + (isLiked(n) ? '★' : '☆') + ' Подобається (' + (n.likes || 0) + ')</button>' +
+        '<button type="button" data-del="' + n.id + '" class="border border-red-600 text-red-500 hover:bg-red-600 hover:text-white px-3 py-1">Видалити</button>' +
+        '</div></div></div></article>';
+    }).join('');
+    Array.prototype.forEach.call(feed.querySelectorAll('.news-ph'), function(d){ d.replaceWith(placeholder()); });
+    Array.prototype.forEach.call(feed.querySelectorAll('.news-img'), function(im){
+      im.addEventListener('error', function(){ im.replaceWith(placeholder()); });
+    });
+    $('nempty').classList.toggle('hidden', news.length > 0);
+    $('ncount').textContent = news.length ? '(' + news.length + ')' : '';
+    var m = $('nmode'); m.textContent = server ? '● спільна стрічка (сервер)' : '○ лише цей браузер';
+    m.className = 'ml-2 text-xs ' + (server ? 'text-green-400' : 'text-gray-500');
+  }
+
+  // Вибір файлу: одразу готуємо Base64 і показуємо прев'ю
+  $('nfile').addEventListener('change', function(e){
+    var f = e.target.files && e.target.files[0];
+    var prev = $('nprev');
+    pending = null; prev.classList.add('hidden');
+    if(!f) return;
+    pending = prepare(f).then(function(b64){
+      $('nprevImg').src = b64; prev.classList.remove('hidden'); msg('');
+      return b64;
+    }).catch(function(){
+      msg('Не вдалося прочитати цей файл як зображення. Оберіть інший або вставте посилання.');
+      return null;
+    });
+  });
+
+  // Відправка форми
+  $('newsForm').addEventListener('submit', function(e){
+    e.preventDefault();               // сторінка не перезавантажується
+    var btn = e.target.querySelector('button');
+    var title = $('ntitle').value.trim(), text = $('ntext').value.trim();
+    var url = $('nurl').value.trim(), author = $('nauthor').value.trim() || 'Анонім';
+    if(!title || !text){ msg('Заповніть заголовок і текст: зведення без суті до архіву не приймаються.'); return; }
+    if(url && !/^https?:\/\//i.test(url)){ msg('Посилання на зображення має починатися з http:// або https://.'); return; }
+    if(btn) btn.disabled = true;
+
+    // чекаємо, поки фото (якщо обране) повністю конвертується в Base64
+    Promise.resolve(pending).then(function(b64){
+      var item = { id: Date.now(), title: title, text: text, author: author,
+        img: b64 || url || '', date: new Date().toLocaleString('uk-UA'), likes: 0, liked: false };
+      if(server){
+        return api('POST', '', { title: item.title, text: item.text, author: item.author, img: item.img })
+          .then(function(s){ news.unshift(s); return { ok: true, note: '' }; });
+      }
+      news.unshift(item);
+      var note = '', ok = persist();
+      if(!ok && item.img.indexOf('data:') === 0){
+        // фото завелике — стискаємо сильніше і пробуємо ще раз
+        return shrink(item.img, 480, 0.55).then(function(small){
+          item.img = small; ok = persist();
+          if(!ok){ item.img = ''; ok = persist(); note = 'Фото завелике для пам\'яті браузера — зведення опубліковано із заглушкою.'; }
+          return { ok: ok, note: note };
+        });
+      }
+      return { ok: ok, note: note };
+    }).then(function(res){
+      $('newsForm').reset(); pending = null; $('nprev').classList.add('hidden');
+      render();                        // стрічка оновлюється миттєво
+      if(!server && !storageOk) msg('Зведення опубліковано, але браузер блокує localStorage — після перезавантаження воно зникне.');
+      else if(!res.ok) msg('Не вдалося зберегти в пам\'яті браузера (сховище заповнене).');
+      else msg(res.note || (server ? 'Зведення опубліковано для всіх відвідувачів.' : 'Зведення опубліковано.'), !res.note);
+    }).catch(function(err){
+      msg('Помилка публікації: ' + (err && err.message ? err.message : 'невідома'));
+    }).then(function(){ if(btn) btn.disabled = false; });
+  });
+
+  // Лайк / видалення
+  $('feed').addEventListener('click', function(e){
+    var l = e.target.closest('[data-like]'), d = e.target.closest('[data-del]');
+    if(l){
+      var id = +l.dataset.like, n = news.filter(function(x){ return x.id === id; })[0]; if(!n) return;
+      var on = likedSet.indexOf(id) < 0;
+      likedSet = on ? likedSet.concat(id) : likedSet.filter(function(x){ return x !== id; }); saveLiked();
+      if(server){ api('POST', '/' + id + '/like', { delta: on ? 1 : -1 }).then(function(s){ n.likes = s.likes; render(); }).catch(function(){}); }
+      else { n.likes = Math.max(0, (n.likes || 0) + (on ? 1 : -1)); persist(); }
+      render();
+    }
+    if(d && confirm('Видалити це зведення зі стрічки?')){
+      var did = +d.dataset.del, drop = function(){ news = news.filter(function(x){ return x.id !== did; }); render(); };
+      if(server) api('DELETE', '/' + did).then(drop).catch(function(){ msg('Не вдалося видалити на сервері.'); });
+      else { drop(); persist(); }
+    }
+  });
+
+  render();
+  if(/^https?:/.test(location.protocol) || window.NEWS_API){
+    pull().then(function(){ setInterval(function(){ pull().catch(function(){}); }, 15000); }).catch(function(){});
+  }
+})();
+</script>
+</body>
+</html>

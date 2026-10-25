@@ -40,10 +40,11 @@
       ⚠ Квадроцикл Ростислава зафіксовано біля двору Семенівни — кури вимагають пояснень ◆ Остап знову розвалив дисципліну за 3 секунди — рекорд збережено ◆ Віталій подолав Тису: польські вишивки отримали нового абітурієнта ◆ Корова знеслася — курка дає молоко — комісія працює ◆ Директор школи в Краковці пішов у відставку — електросамокат не коментує ◆ Дмитро «Пес» знову в чорному списку чийогось месенджера — гроші не знайдено ◆ У Янові тріснули дзеркала — Назар знову без баби ◆ Штанга 20 кг затримала Миколу на місці — оперативна група задоволена ◆
     </span></div>
   </div>
-  <nav class="max-w-6xl mx-auto px-4 flex gap-1 text-sm" aria-label="Розділи">
+  <nav class="max-w-6xl mx-auto px-4 flex flex-wrap items-center gap-1 text-sm" aria-label="Розділи">
     <button data-tab="home" class="tab px-4 py-2 border-b-2">Головна / База фігурантів</button>
     <button data-tab="news" class="tab px-4 py-2 border-b-2">Новини</button>
     <button data-tab="report" class="tab px-4 py-2 border-b-2">Анонімний донос</button>
+    <div id="authBar" class="ml-auto flex flex-wrap items-center gap-2 py-1"></div>
   </nav>
 </header>
 
@@ -135,6 +136,54 @@
   Усі збіги випадкові, кури й корови — вигадані. Сайт створено суто для жарту.
 </footer>
 
+<!-- ВХІД -->
+<div id="loginModal" class="hidden fixed inset-0 z-50 bg-black/85 overflow-y-auto p-4" role="dialog" aria-modal="true" aria-labelledby="lTitle">
+  <div class="max-w-sm mx-auto mt-16 bg-[#0f172a] border-2 border-red-600 relative p-6">
+    <button type="button" data-close="loginModal" class="absolute top-2 right-3 text-2xl text-gray-400 hover:text-white" aria-label="Закрити">×</button>
+    <div class="text-xs text-red-500 font-bold mb-1">ДОПУСК ОБМЕЖЕНО · СПЕЦАРХІВ</div>
+    <h2 id="lTitle" class="text-lg font-bold text-yellow-500 mb-4">Вхід для оперативників</h2>
+    <form id="loginForm" class="space-y-3" novalidate>
+      <div><label for="lLogin" class="block text-sm mb-1">Позивний (логін)</label><input id="lLogin" autocomplete="username" class="w-full bg-black border border-gray-600 focus:border-yellow-500 px-3 py-2 text-sm"></div>
+      <div><label for="lPass" class="block text-sm mb-1">Пароль</label><input id="lPass" type="password" autocomplete="current-password" class="w-full bg-black border border-gray-600 focus:border-yellow-500 px-3 py-2 text-sm"></div>
+      <p id="lErr" class="hidden text-red-500 text-sm"></p>
+      <button class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-2">Пред'явити допуск</button>
+    </form>
+  </div>
+</div>
+
+<!-- ФОРМА ФІГУРАНТА -->
+<div id="figModal" class="hidden fixed inset-0 z-50 bg-black/85 overflow-y-auto p-4" role="dialog" aria-modal="true" aria-labelledby="fTitle">
+  <div class="max-w-2xl mx-auto bg-[#0f172a] border-2 border-yellow-500 relative p-6">
+    <button type="button" data-close="figModal" class="absolute top-2 right-3 text-2xl text-gray-400 hover:text-white" aria-label="Закрити">×</button>
+    <div class="text-xs text-red-500 font-bold mb-1">СЛУЖБОВИЙ РОЗДІЛ · ТІЛЬКИ ДЛЯ ОПЕРАТИВНИКІВ</div>
+    <h2 id="fTitle" class="text-lg font-bold text-yellow-500 mb-4">Новий фігурант</h2>
+    <form id="figForm" class="space-y-4" novalidate>
+      <input type="hidden" id="fId"><input type="hidden" id="fImgOld">
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div><label for="fName" class="block text-sm mb-1">ПІБ</label><input id="fName" maxlength="120" class="w-full bg-black border border-gray-600 focus:border-yellow-500 px-3 py-2 text-sm"></div>
+        <div><label for="fDob" class="block text-sm mb-1">Дата народження</label><input id="fDob" maxlength="40" class="w-full bg-black border border-gray-600 focus:border-yellow-500 px-3 py-2 text-sm" placeholder="14 серпня 2010 року"></div>
+      </div>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div><label for="fFile" class="block text-sm mb-1">Фото (файл)</label><input id="fFile" type="file" accept="image/*" class="w-full text-xs text-gray-400 file:mr-3 file:border file:border-yellow-500 file:bg-black file:text-yellow-500 file:px-3 file:py-1 file:cursor-pointer"></div>
+        <div><label for="fUrl" class="block text-sm mb-1">або посилання / ім'я файлу</label><input id="fUrl" class="w-full bg-black border border-gray-600 focus:border-yellow-500 px-3 py-2 text-sm" placeholder="https://… або photo.jpg"></div>
+      </div>
+      <img id="fPrev" alt="Попередній перегляд" class="hidden max-h-32 border border-yellow-600">
+      <div><label for="fBadge" class="block text-sm mb-1">Статус / плашка</label><input id="fBadge" maxlength="80" class="w-full bg-black border border-gray-600 focus:border-yellow-500 px-3 py-2 text-sm" placeholder="ОСОБЛИВО НЕБЕЗПЕЧНИЙ"></div>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div><label for="fColor" class="block text-sm mb-1">Колір плашки</label>
+          <select id="fColor" class="w-full bg-black border border-gray-600 focus:border-yellow-500 px-3 py-2 text-sm"><option value="red">Червоний</option><option value="yellow">Жовтий</option><option value="orange">Помаранчевий</option><option value="green">Зелений</option><option value="purple">Фіолетовий</option></select></div>
+        <div><label for="fRing" class="block text-sm mb-1">Обводка картки</label>
+          <select id="fRing" class="w-full bg-black border border-gray-600 focus:border-yellow-500 px-3 py-2 text-sm"><option value="normal">Звичайна</option><option value="red">Червона сяюча</option><option value="green">Зелена неонова</option><option value="yellow">Жовта сяюча</option><option value="purple">Фіолетова сяюча</option></select></div>
+      </div>
+      <div><label for="fDossier" class="block text-sm mb-1">Коротке досьє</label><textarea id="fDossier" rows="4" maxlength="1500" class="w-full bg-black border border-gray-600 focus:border-yellow-500 px-3 py-2 text-sm"></textarea></div>
+      <fieldset><legend class="text-sm mb-1">Характеристики-смужки (до 4): назва · значення 0–100 · підпис</legend><div id="fMeters" class="space-y-2"></div></fieldset>
+      <p id="fErr" class="hidden text-red-500 text-sm"></p>
+      <div class="flex gap-3"><button class="bg-red-600 hover:bg-red-500 text-white font-bold px-5 py-2">Зберегти в спецархів</button>
+        <button type="button" data-close="figModal" class="border border-gray-500 text-gray-300 px-5 py-2">Скасувати</button></div>
+    </form>
+  </div>
+</div>
+
 <!-- МОДАЛКА ДОСЬЄ -->
 <div id="modal" class="hidden fixed inset-0 z-50 bg-black/80 overflow-y-auto p-4" role="dialog" aria-modal="true" aria-labelledby="mTitle">
   <div id="mBox" class="max-w-3xl mx-auto bg-[#0f172a] border-2 border-red-600 relative">
@@ -181,11 +230,17 @@ const DATA = [
     meters:[["Об'єм випитого спиртного на Курчунку",100,"% (жодного грама не залишено)"],["Рівень розкурювання нерозкурюваного",93,"%"],["Стійкість під 20-кілограмовою штангою",8,"% (затримано в горизонтальному положенні)"]],
     proofs:["Доказ А: порожня тара на Курчунку — лічильник збився після першої сотні.","Доказ Б: штанга 20 кг, що притиснула фігуранта, — речовий доказ №1.","Доказ В: протокол затримання складено прямо на килимку для аштанги."] }
 ];
-const CATS = {all:"Усі", humor:"Гумор", agro:"Агросектор", sport:"Водні види", fin:"Фінанси", road:"Самокат і бокс", photo:"Фото й крик", gym:"Курчунок і зал"};
+const CATS = {all:"Усі", humor:"Гумор", agro:"Агросектор", sport:"Водні види", fin:"Фінанси", road:"Самокат і бокс", custom:"Нові", photo:"Фото й крик", gym:"Курчунок і зал"};
 const col = c => c==="red" ? ["border-red-600","text-red-500","bg-red-600","text-white"]
   : c==="green" ? ["border-green-500","text-green-400","bg-green-500","text-black"]
+  : c==="orange" ? ["border-orange-500","text-orange-400","bg-orange-500","text-black"]
+  : c==="purple" ? ["border-purple-500","text-purple-400","bg-purple-500","text-white"]
   : ["border-yellow-500","text-yellow-500","bg-yellow-500","text-black"];
-const GLOW = "border-2 shadow-[0_0_15px_rgba(34,197,94,0.3)]";
+const RING = {
+  red:"border-2 border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.4)]",
+  green:"border-2 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)]",
+  yellow:"border-2 border-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.35)]",
+  purple:"border-2 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.4)]" };
 
 const esc = s => String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 let cat = "all";
@@ -199,10 +254,10 @@ function photo(p, cls){
 
 function render(){
   const q = document.getElementById('search').value.trim().toLowerCase();
-  const list = DATA.filter(p => (cat==="all"||p.cat===cat) && (p.name+p.dossier+p.badge).toLowerCase().includes(q));
+  const list = figures().filter(p => (cat==="all"||p.cat===cat) && (p.name+p.dossier+p.badge).toLowerCase().includes(q));
   document.getElementById('grid').innerHTML = list.map(p => {
     const [b,t,bg,fg] = col(p.color);
-    return `<article class="bg-[#0f172a] border ${b} ${p.color==='green'?GLOW:''} flex flex-col">
+    return `<article class="bg-[#0f172a] ${p.ring!=='normal'?RING[p.ring]:'border '+b} flex flex-col">
       ${photo(p,'h-64')}
       <div class="p-4 flex flex-col gap-3 flex-1">
         <span class="${bg} ${fg} text-xs font-bold px-2 py-1 self-start">${p.badge}</span>
@@ -210,10 +265,11 @@ function render(){
         ${p.dob?`<div class="text-xs text-gray-400">Дата народження: ${p.dob}</div>`:''}
         <p class="text-sm text-gray-300 flex-1">${p.dossier}</p>
         <button data-open="${p.id}" class="border ${b} ${t} hover:${bg} hover:text-black px-3 py-2 text-sm font-bold">Детальне досьє</button>
+        ${session?`<div class="flex gap-2 text-xs"><button data-edit="${p.id}" class="flex-1 border border-gray-500 text-gray-300 hover:border-yellow-500 hover:text-yellow-500 py-1">Редагувати</button><button data-delfig="${p.id}" class="flex-1 border border-red-600 text-red-500 hover:bg-red-600 hover:text-white py-1">Видалити</button></div>`:''}
       </div></article>`;
   }).join('');
   document.getElementById('empty').classList.toggle('hidden', list.length>0);
-  document.getElementById('counter').textContent = DATA.length;
+  document.getElementById('counter').textContent = figures().length;
 }
 
 function renderFilters(){
@@ -222,9 +278,9 @@ function renderFilters(){
 }
 
 function openModal(id){
-  const p = DATA.find(x=>x.id===id); const [b,t] = col(p.color);
+  const p = figures().find(x=>String(x.id)===String(id)); if(!p) return; const [b,t,bg] = col(p.color);
   document.getElementById('mBox').className = 'max-w-3xl mx-auto bg-[#0f172a] relative ' +
-    (p.color==='green' ? 'border-2 border-green-500 shadow-[0_0_25px_rgba(34,197,94,0.4)]' : 'border-2 border-red-600');
+    (p.ring!=='normal' ? RING[p.ring] : 'border-2 border-red-600');
   document.getElementById('mBody').innerHTML = `
     <div class="flex flex-wrap gap-5">
       ${photo(p,'w-40 h-52 shrink-0 border '+b)}
@@ -236,13 +292,13 @@ function openModal(id){
         <p class="text-sm text-gray-300">${p.dossier}</p>
       </div>
     </div>
-    <h3 class="text-yellow-500 font-bold mt-6 mb-2">Характеристики</h3>
+    ${p.meters.length?'<h3 class="text-yellow-500 font-bold mt-6 mb-2">Характеристики</h3>':''}
     <div class="space-y-3">${p.meters.map(m=>`
       <div><div class="flex justify-between text-xs mb-1"><span>${m[0]}</span><span class="${t}">${m[1]} ${m[2]}</span></div>
-      <div class="bar h-3 bg-gray-800 border border-gray-700"><i class="${p.color==='red'?'bg-red-600':p.color==='green'?'bg-green-500':'bg-yellow-500'}" data-w="${m[1]}"></i></div></div>`).join('')}
+      <div class="bar h-3 bg-gray-800 border border-gray-700"><i class="${bg}" data-w="${m[1]}"></i></div></div>`).join('')}
     </div>
-    <h3 class="text-yellow-500 font-bold mt-6 mb-2">Докази</h3>
-    <ul class="space-y-2 text-sm">${p.proofs.map(x=>`<li class="border-l-4 border-red-600 bg-black/40 px-3 py-2">${x}</li>`).join('')}</ul>`;
+    ${p.proofs.length?`<h3 class="text-yellow-500 font-bold mt-6 mb-2">Докази</h3>
+    <ul class="space-y-2 text-sm">${p.proofs.map(x=>`<li class="border-l-4 border-red-600 bg-black/40 px-3 py-2">${x}</li>`).join('')}</ul>`:''}`;
   const m = document.getElementById('modal'); m.classList.remove('hidden'); document.body.style.overflow='hidden';
   requestAnimationFrame(()=>document.querySelectorAll('.bar>i').forEach(i=>i.style.width=i.dataset.w+'%'));
   document.getElementById('mClose').focus();
@@ -258,7 +314,7 @@ function showTab(name){
 }
 
 document.addEventListener('click', e=>{
-  const o = e.target.closest('[data-open]'); if(o) openModal(+o.dataset.open);
+  const o = e.target.closest('[data-open]'); if(o) openModal(o.dataset.open);
   const c = e.target.closest('[data-cat]'); if(c){ cat=c.dataset.cat; renderFilters(); render(); }
   const t = e.target.closest('[data-tab]'); if(t) showTab(t.dataset.tab);
   if(e.target.id==='modal') closeModal();
@@ -278,7 +334,126 @@ document.getElementById('reportForm').addEventListener('submit', e=>{
   ok.classList.remove('hidden'); e.target.reset();
 });
 
-renderFilters(); render(); showTab('home');
+/* ===== АДМІНКА ===== */
+const g = id => document.getElementById(id);
+const AROOT = (window.NEWS_API || '/api/news').replace(/\/news\/?$/, '');
+let figState = { custom:[], overrides:{}, hidden:[] }, session = null;
+try { session = JSON.parse(localStorage.getItem('mirotvorets_admin') || 'null'); } catch(e){}
+const okImg = u => /^(https?:\/\/|data:image\/)/i.test(u) || /^[\w.-]+\.(jpe?g|png|webp)$/i.test(u);
+
+function rawFigures(){
+  return DATA.filter(p => !figState.hidden.includes(String(p.id)))
+    .map(p => figState.overrides[p.id] ? { ...p, ...figState.overrides[p.id], id:p.id } : p)
+    .concat(figState.custom);
+}
+function clean(p){
+  const trusted = DATA.some(d => d.id === p.id) && !figState.overrides[p.id];
+  const base = { ...p, ring: p.ring || (p.color==='green' ? 'green' : 'normal'), proofs: p.proofs || [], meters: p.meters || [] };
+  if(trusted) return base;
+  return { ...base, name:esc(p.name), dob:p.dob?esc(p.dob):null, badge:esc(p.badge), dossier:esc(p.dossier), img:esc(p.img||''),
+    alt:'Фото фігуранта: '+p.name, meters:base.meters.map(m=>[esc(m[0]),m[1],esc(m[2]||'')]), cat:p.cat||'custom' };
+}
+const figures = () => rawFigures().map(clean);
+
+function fapi(method, path, body){
+  const hd = { 'Content-Type':'application/json' }; if(session) hd.Authorization = 'Bearer ' + session.token;
+  return fetch(AROOT + path, { method, headers:hd, cache:'no-store', body: body ? JSON.stringify(body) : undefined })
+    .then(r => r.json().catch(()=>({})).then(d => {
+      if(r.status===401 && session && path!=='/login'){ logout(true); }
+      if(!r.ok) throw new Error(d.error || ('Помилка ' + r.status));
+      return d; }));
+}
+function loadFigures(){ fapi('GET','/figures').then(s => { if(s && Array.isArray(s.custom)){ figState = s; render(); } }).catch(()=>{}); }
+
+function refreshAuth(){
+  g('authBar').innerHTML = session
+    ? `<span class="text-xs text-green-400">Авторизовано як ${esc(session.name)}</span>
+       <button data-act="add" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-3 py-1">+ Додати нового фігуранта</button>
+       <button data-act="logout" class="border border-gray-500 text-gray-300 text-xs px-3 py-1">Вийти</button>`
+    : `<button data-act="login" class="border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black text-xs font-bold px-3 py-1">Вхід для оперативників / Адмін</button>`;
+  render();
+}
+function logout(expired){
+  if(session && !expired) fapi('POST','/logout').catch(()=>{});
+  session = null; try { localStorage.removeItem('mirotvorets_admin'); } catch(e){}
+  refreshAuth();
+}
+const show = id => { g(id).classList.remove('hidden'); document.body.style.overflow='hidden'; };
+const hide = id => { g(id).classList.add('hidden'); document.body.style.overflow=''; };
+
+function toB64(file){
+  return new Promise(res => {
+    const r = new FileReader();
+    r.onerror = () => res(null);
+    r.onload = () => { const im = new Image();
+      im.onerror = () => res(null);
+      im.onload = () => { const k = Math.min(1, 700/Math.max(im.width, im.height)), c = document.createElement('canvas');
+        c.width = Math.max(1,Math.round(im.width*k)); c.height = Math.max(1,Math.round(im.height*k));
+        c.getContext('2d').drawImage(im,0,0,c.width,c.height); res(c.toDataURL('image/jpeg',0.75)); };
+      im.src = r.result; };
+    r.readAsDataURL(file);
+  });
+}
+let figImgP = null;
+g('fFile').addEventListener('change', e => {
+  const f = e.target.files[0], pv = g('fPrev'); figImgP = null; pv.classList.add('hidden');
+  if(f) figImgP = toB64(f).then(b => { if(b){ pv.src = b; pv.classList.remove('hidden'); } else { g('fErr').textContent='Цей файл не схожий на зображення.'; g('fErr').classList.remove('hidden'); } return b; });
+});
+g('fMeters').innerHTML = [0,1,2,3].map(i => `<div class="grid grid-cols-[1fr_5rem_1fr] gap-2">
+  <input id="mL${i}" maxlength="60" aria-label="Назва шкали ${i+1}" placeholder="Рівень децибел" class="bg-black border border-gray-600 focus:border-yellow-500 px-2 py-1 text-sm">
+  <input id="mV${i}" type="number" min="0" max="100" aria-label="Значення ${i+1}" placeholder="95" class="bg-black border border-gray-600 focus:border-yellow-500 px-2 py-1 text-sm">
+  <input id="mS${i}" maxlength="60" aria-label="Підпис ${i+1}" placeholder="% / дБ" class="bg-black border border-gray-600 focus:border-yellow-500 px-2 py-1 text-sm"></div>`).join('');
+
+function openFig(id){
+  const f = id ? rawFigures().find(x => String(x.id)===String(id)) : null, d = f || {};
+  g('fTitle').textContent = f ? 'Редагувати фігуранта' : 'Новий фігурант';
+  g('fId').value = f ? f.id : ''; g('fName').value = d.name || ''; g('fDob').value = d.dob || '';
+  g('fBadge').value = d.badge || ''; g('fDossier').value = d.dossier || '';
+  g('fColor').value = d.color || 'red'; g('fRing').value = d.ring || (d.color==='green' ? 'green' : 'normal');
+  g('fUrl').value = /^https?:/i.test(d.img||'') ? d.img : ''; g('fImgOld').value = d.img || '';
+  g('fFile').value = ''; figImgP = null; g('fPrev').classList.add('hidden'); g('fErr').classList.add('hidden');
+  [0,1,2,3].forEach(i => { const m = (d.meters||[])[i] || ['','','']; g('mL'+i).value = m[0]; g('mV'+i).value = m[1]; g('mS'+i).value = m[2]; });
+  show('figModal'); g('fName').focus();
+}
+
+g('loginForm').addEventListener('submit', e => {
+  e.preventDefault(); const er = g('lErr'); er.classList.add('hidden');
+  fapi('POST','/login',{ login:g('lLogin').value.trim(), password:g('lPass').value })
+    .then(d => { session = { token:d.token, name:d.name }; try { localStorage.setItem('mirotvorets_admin', JSON.stringify(session)); } catch(x){}
+      g('loginForm').reset(); hide('loginModal'); refreshAuth(); })
+    .catch(err => { er.textContent = err instanceof TypeError ? 'Сервер недоступний. Запустіть node server.js.' : err.message; er.classList.remove('hidden'); });
+});
+
+g('figForm').addEventListener('submit', async e => {
+  e.preventDefault(); const er = g('fErr'), btn = e.target.querySelector('button'); er.classList.add('hidden');
+  const fail = t => { er.textContent = t; er.classList.remove('hidden'); };
+  const name = g('fName').value.trim(), badge = g('fBadge').value.trim(), dossier = g('fDossier').value.trim();
+  if(!name || !badge || !dossier) return fail('Заповніть ПІБ, статус / плашку та досьє.');
+  let img = g('fUrl').value.trim();
+  if(figImgP){ const b = await figImgP; if(b) img = b; }
+  if(!img) img = g('fImgOld').value;
+  if(img && !okImg(img)) return fail('Фото: вкажіть посилання http(s), ім\'я файлу (photo.jpg) або оберіть файл.');
+  const meters = [0,1,2,3].map(i => [g('mL'+i).value.trim(), Math.max(0,Math.min(100,+g('mV'+i).value||0)), g('mS'+i).value.trim()]).filter(m => m[0]);
+  const body = { name, dob:g('fDob').value.trim(), img, badge, color:g('fColor').value, ring:g('fRing').value, dossier, meters };
+  const id = g('fId').value; btn.disabled = true;
+  try { await fapi(id ? 'PUT' : 'POST', id ? '/figures/'+id : '/figures', body); hide('figModal'); loadFigures(); }
+  catch(err){ fail(err instanceof TypeError ? 'Сервер недоступний.' : err.message); }
+  btn.disabled = false;
+});
+
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-act]'), ed = e.target.closest('[data-edit]'), dl = e.target.closest('[data-delfig]'), cl = e.target.closest('[data-close]');
+  if(cl) hide(cl.dataset.close);
+  if(e.target.id==='loginModal' || e.target.id==='figModal') hide(e.target.id);
+  if(a){ if(a.dataset.act==='login'){ show('loginModal'); g('lLogin').focus(); } if(a.dataset.act==='add') openFig(); if(a.dataset.act==='logout') logout(); }
+  if(ed && session) openFig(ed.dataset.edit);
+  if(dl && session && confirm('Видалити цього фігуранта з бази для всіх відвідувачів?'))
+    fapi('DELETE','/figures/'+dl.dataset.delfig).then(loadFigures).catch(err => alert(err.message));
+});
+document.addEventListener('keydown', e => { if(e.key==='Escape'){ hide('loginModal'); hide('figModal'); } });
+
+renderFilters(); refreshAuth(); showTab('home');
+if(/^https?:/.test(location.protocol) || window.NEWS_API){ loadFigures(); setInterval(loadFigures, 20000); }
 </script>
 <script>
 (function(){

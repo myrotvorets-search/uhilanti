@@ -1,16 +1,104 @@
 // Запуск: node server.js  (потрібен лише Node.js 16+, без npm install)
-const http = require('http'), fs = require('fs'), path = require('path');
+const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto');
 const PORT = process.env.PORT || 3000, FILE = path.join(__dirname, 'news.json'), MAX = 200, LIM = 3e6;
 let news = []; try { news = JSON.parse(fs.readFileSync(FILE, 'utf8')); } catch (e) {}
 const save = () => fs.writeFile(FILE + '.tmp', JSON.stringify(news), e => { if (!e) fs.rename(FILE + '.tmp', FILE, () => {}); });
-const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' };
+const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type,Authorization' };
 const send = (res, code, obj) => { res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', ...cors }); res.end(JSON.stringify(obj)); };
 const clip = (s, n) => String(s || '').slice(0, n);
 const types = { '.html': 'text/html; charset=utf-8', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp' };
 
+// ================= АДМІНИ ТА ФІГУРАНТИ =================
+// Облікові записи зберігаються ТІЛЬКИ тут, у браузер вони не потрапляють.
+const ADMINS = {
+  'Shadow_Observer_00': 'NullPointer666',
+  'Archivist_Void': 'WhisperOfYaniv',
+  'Agent_Semenivna_X': 'KvasoKorova2010',
+  'Phantom_Protocol_9': 'TysaDeepSwimmer',
+  'Grim_Registrar': 'BlackListZubovych'
+};
+const FIG_FILE = path.join(__dirname, 'figures.json');
+let figs = { custom: [], overrides: {}, hidden: [] };
+try { const j = JSON.parse(fs.readFileSync(FIG_FILE, 'utf8')); figs = { custom: j.custom || [], overrides: j.overrides || {}, hidden: j.hidden || [] }; } catch (e) {}
+const saveFigs = () => fs.writeFile(FIG_FILE + '.tmp', JSON.stringify(figs), e => { if (!e) fs.rename(FIG_FILE + '.tmp', FIG_FILE, () => {}); });
+const sessions = new Map(), fails = new Map();
+const h256 = x => crypto.createHash('sha256').update(String(x)).digest();
+const eq = (a, b) => crypto.timingSafeEqual(h256(a), h256(b));
+const auth = req => { const m = /^Bearer (\w+)$/.exec(req.headers.authorization || ''); const s = m && sessions.get(m[1]);
+  return s && s.exp > Date.now() ? { token: m[1], name: s.name } : null; };
+function readJson(req, res, cb) {
+  let b = '', big = false;
+  req.on('data', c => { b += c; if (b.length > LIM) { big = true; req.destroy(); } });
+  req.on('end', () => { if (big) return; let d; try { d = JSON.parse(b || '{}'); } catch (e) { return send(res, 400, { error: 'Некоректні дані' }); } cb(d); });
+}
+const COLORS = ['red', 'yellow', 'orange', 'green', 'purple'], RINGS = ['normal', 'red', 'green', 'yellow', 'purple'];
+function cleanFig(d) {
+  const name = clip(d.name, 120).trim(), dossier = clip(d.dossier, 1500).trim(), badge = clip(d.badge, 80).trim().toUpperCase();
+  if (!name || !dossier || !badge) return null;
+  const im = String(d.img || '');
+  const img = (/^(https?:\/\/|data:image\/)/i.test(im) || /^[\w.-]+\.(jpe?g|png|webp)$/i.test(im)) ? im.slice(0, 2e6) : '';
+  const meters = (Array.isArray(d.meters) ? d.meters : []).slice(0, 4)
+    .map(m => [clip(m && m[0], 60).trim(), Math.max(0, Math.min(100, Math.round(Number(m && m[1]) || 0))), clip(m && m[2], 60).trim()]).filter(m => m[0]);
+  return { name, dob: clip(d.dob, 40).trim() || null, img, badge, color: COLORS.includes(d.color) ? d.color : 'red',
+    ring: RINGS.includes(d.ring) ? d.ring : 'normal', dossier, meters };
+}
+function handleAdmin(req, res, u) {
+  if (u === '/api/login' && req.method === 'POST') {
+    const ip = req.socket.remoteAddress, f = fails.get(ip) || { n: 0, t: Date.now() };
+    if (Date.now() - f.t > 6e4) { f.n = 0; f.t = Date.now(); }
+    if (f.n >= 5) { send(res, 429, { error: 'Забагато спроб. Зачекайте хвилину.' }); return true; }
+    readJson(req, res, d => {
+      const l = String(d.login || ''), pw = String(d.password || '');
+      const name = Object.keys(ADMINS).find(k => eq(k, l) && eq(ADMINS[k], pw));
+      if (!name) { f.n++; fails.set(ip, f); return send(res, 401, { error: 'Невірний логін або пароль' }); }
+      fails.delete(ip);
+      const token = crypto.randomBytes(24).toString('hex');
+      sessions.set(token, { name, exp: Date.now() + 7 * 864e5 });
+      send(res, 200, { token, name });
+    });
+    return true;
+  }
+  if (u === '/api/logout' && req.method === 'POST') { const a = auth(req); if (a) sessions.delete(a.token); send(res, 200, { ok: true }); return true; }
+  if (u === '/api/figures' || u.startsWith('/api/figures/')) {
+    const id = u.split('/')[3];
+    if (req.method === 'GET' && !id) { send(res, 200, figs); return true; }
+    const a = auth(req);
+    if (!a) { send(res, 401, { error: 'Потрібна авторизація' }); return true; }
+    if (req.method === 'POST' && !id) {
+      readJson(req, res, d => {
+        const f = cleanFig(d); if (!f) return send(res, 400, { error: 'Заповніть ПІБ, плашку та досьє' });
+        const item = { id: 'c' + Date.now().toString(36) + crypto.randomBytes(2).toString('hex'), ...f, cat: 'custom', by: a.name };
+        figs.custom.push(item); saveFigs(); send(res, 201, item);
+      });
+      return true;
+    }
+    if (req.method === 'PUT' && id) {
+      readJson(req, res, d => {
+        const f = cleanFig(d); if (!f) return send(res, 400, { error: 'Заповніть ПІБ, плашку та досьє' });
+        const i = figs.custom.findIndex(x => x.id === id);
+        if (i > -1) figs.custom[i] = { ...figs.custom[i], ...f };
+        else if (/^\d+$/.test(id)) { figs.overrides[id] = f; figs.hidden = figs.hidden.filter(x => x !== id); }
+        else return send(res, 404, { error: 'Не знайдено' });
+        saveFigs(); send(res, 200, { ok: true });
+      });
+      return true;
+    }
+    if (req.method === 'DELETE' && id) {
+      const i = figs.custom.findIndex(x => x.id === id);
+      if (i > -1) figs.custom.splice(i, 1);
+      else if (/^\d+$/.test(id)) { if (!figs.hidden.includes(id)) figs.hidden.push(id); delete figs.overrides[id]; }
+      else { send(res, 404, { error: 'Не знайдено' }); return true; }
+      saveFigs(); send(res, 200, { ok: true }); return true;
+    }
+    send(res, 405, { error: 'method' }); return true;
+  }
+  return false;
+}
+
 http.createServer((req, res) => {
   const u = req.url.split('?')[0];
   if (req.method === 'OPTIONS') { res.writeHead(204, cors); return res.end(); }
+  if (handleAdmin(req, res, u)) return;
   if (u === '/api/news' || u.startsWith('/api/news/')) {
     const id = u.split('/')[3];
     if (req.method === 'GET' && !id) return send(res, 200, news);

@@ -42,7 +42,43 @@ function cleanFig(d) {
   return { name, dob: clip(d.dob, 40).trim() || null, img, badge, color: COLORS.includes(d.color) ? d.color : 'red',
     ring: RINGS.includes(d.ring) ? d.ring : 'normal', dossier, meters };
 }
+// ---- Анонімні доноси (надсилати може кожен, читати й керувати — лише адміни) ----
+const DN_FILE = path.join(__dirname, 'denunciations.json');
+let dns = []; try { dns = JSON.parse(fs.readFileSync(DN_FILE, 'utf8')); if (!Array.isArray(dns)) dns = []; } catch (e) {}
+const saveDns = () => fs.writeFile(DN_FILE + '.tmp', JSON.stringify(dns), e => { if (!e) fs.rename(DN_FILE + '.tmp', DN_FILE, () => {}); });
+const dnHits = new Map();
+
 function handleAdmin(req, res, u) {
+  if (u === '/api/denunciations' || u.startsWith('/api/denunciations/')) {
+    const id = u.split('/')[3];
+    if (req.method === 'POST' && !id) {
+      const ip = req.socket.remoteAddress, now = Date.now(), hits = (dnHits.get(ip) || []).filter(t => now - t < 6e5);
+      if (hits.length >= 5) { send(res, 429, { error: 'Забагато доносів. Зачекайте кілька хвилин.' }); return true; }
+      readJson(req, res, d => {
+        const who = clip(d.who, 120).trim(), text = clip(d.text, 2000).trim(), im = String(d.img || '');
+        if (!who || !text) return send(res, 400, { error: 'Вкажіть, на кого донос, та опишіть порушення.' });
+        if (im.length > 2.5e6) return send(res, 413, { error: 'Фото завелике.' });
+        if (im && !/^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(im)) return send(res, 400, { error: 'Фото має бути зображенням (JPEG, PNG, WebP або GIF).' });
+        hits.push(now); dnHits.set(ip, hits);
+        dns.unshift({ id: now.toString(36) + crypto.randomBytes(3).toString('hex'), who, text, img: im, date: new Date().toISOString(), archived: false });
+        dns = dns.slice(0, 500); saveDns(); send(res, 201, { ok: true });
+      });
+      return true;
+    }
+    if (!auth(req)) { send(res, 401, { error: 'Потрібна авторизація' }); return true; }
+    if (req.method === 'GET' && !id) { send(res, 200, dns); return true; }
+    const it = id && dns.find(x => x.id === id);
+    if (req.method === 'PUT' && id) {
+      if (!it) { send(res, 404, { error: 'Не знайдено' }); return true; }
+      readJson(req, res, d => { it.archived = !!d.archived; saveDns(); send(res, 200, it); });
+      return true;
+    }
+    if (req.method === 'DELETE' && id) {
+      if (!it) { send(res, 404, { error: 'Не знайдено' }); return true; }
+      dns = dns.filter(x => x.id !== id); saveDns(); send(res, 200, { ok: true }); return true;
+    }
+    send(res, 405, { error: 'method' }); return true;
+  }
   if (u === '/api/login' && req.method === 'POST') {
     const ip = req.socket.remoteAddress, f = fails.get(ip) || { n: 0, t: Date.now() };
     if (Date.now() - f.t > 6e4) { f.n = 0; f.t = Date.now(); }

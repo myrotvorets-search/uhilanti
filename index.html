@@ -82,7 +82,14 @@
           <textarea id="what" rows="5" required class="w-full bg-black border border-gray-600 focus:border-yellow-500 px-3 py-2 text-sm" placeholder="Місце, час, кількість свідків-курей…"></textarea>
         </div>
         <p id="formErr" class="hidden text-red-500 text-sm">Заповніть обидва поля: без імені й суті справу відкрити неможливо.</p>
-        <button class="bg-red-600 hover:bg-red-500 text-white font-bold px-5 py-2">Надіслати в спецархів</button>
+        <div>
+          <label for="dFile" class="block text-sm mb-1">Прикріпити фото (необов'язково)</label>
+          <input id="dFile" type="file" accept="image/*" class="w-full text-xs text-gray-400 file:mr-3 file:border file:border-yellow-500 file:bg-black file:text-yellow-500 file:px-3 file:py-1 file:cursor-pointer">
+          <img id="dPrev" alt="Попередній перегляд фото" class="hidden mt-2 max-h-40 border border-yellow-600">
+        </div>
+        <input id="dTrap" tabindex="-1" autocomplete="off" aria-hidden="true" class="hidden">
+        <p class="text-xs text-gray-500 border-l-2 border-yellow-600 pl-3">Лише жартівливі повідомлення. Не надсилайте справжні особисті дані, фото сторонніх людей без їхньої згоди та нічого образливого — такі доноси оперативники видаляють.</p>
+        <button class="bg-red-600 hover:bg-red-500 text-white font-bold px-5 py-2">Відправити в архів СБУ</button>
       </form>
       <div id="formOk" class="hidden mt-5 border border-green-600 bg-green-950/30 p-4 text-sm text-green-400"></div>
     </div>
@@ -181,6 +188,17 @@
       <div class="flex gap-3"><button class="bg-red-600 hover:bg-red-500 text-white font-bold px-5 py-2">Зберегти в спецархів</button>
         <button type="button" data-close="figModal" class="border border-gray-500 text-gray-300 px-5 py-2">Скасувати</button></div>
     </form>
+  </div>
+</div>
+
+<!-- СЕКРЕТНІ ДОНОСИ -->
+<div id="dnModal" class="hidden fixed inset-0 z-50 bg-black/85 overflow-y-auto p-4" role="dialog" aria-modal="true" aria-labelledby="dnTitle">
+  <div class="max-w-3xl mx-auto bg-[#0f172a] border-2 border-red-600 relative p-6">
+    <button type="button" data-close="dnModal" class="absolute top-2 right-3 text-2xl text-gray-400 hover:text-white" aria-label="Закрити">×</button>
+    <div class="text-xs text-red-500 font-bold mb-1">СЕКРЕТНО · ТІЛЬКИ ДЛЯ ОПЕРАТИВНИКІВ</div>
+    <h2 id="dnTitle" class="text-lg font-bold text-yellow-500 mb-1">Архів компроматів</h2>
+    <p id="dnCount" class="text-xs text-gray-400 mb-4"></p>
+    <div id="dnList" class="space-y-4"></div>
   </div>
 </div>
 
@@ -323,15 +341,26 @@ document.getElementById('mClose').addEventListener('click', closeModal);
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
 document.getElementById('search').addEventListener('input', render);
 
-document.getElementById('reportForm').addEventListener('submit', e=>{
+document.getElementById('dFile').addEventListener('change', e => {
+  const f = e.target.files[0], pv = document.getElementById('dPrev'); window._dnP = null; pv.classList.add('hidden');
+  if(f) window._dnP = toB64(f).then(b => { if(b){ pv.src = b; pv.classList.remove('hidden'); } else {
+    const er = document.getElementById('formErr'); er.textContent = 'Цей файл не схожий на зображення.'; er.classList.remove('hidden'); } return b; });
+});
+document.getElementById('reportForm').addEventListener('submit', async e => {
   e.preventDefault();
-  const who = document.getElementById('who').value.trim(), what = document.getElementById('what').value.trim();
-  const err = document.getElementById('formErr'), ok = document.getElementById('formOk');
-  if(!who||!what){ err.classList.remove('hidden'); ok.classList.add('hidden'); return; }
-  err.classList.add('hidden');
-  const n = Math.floor(Math.random()*9000+1000);
-  ok.textContent = `Донос №${n} на «${who}» прийнято до спецархіву. Автора встановлено не буде (курей уже опитали). Дякуємо за пильність.`;
-  ok.classList.remove('hidden'); e.target.reset();
+  const $ = id => document.getElementById(id), er = $('formErr'), ok = $('formOk'), btn = e.target.querySelector('button');
+  const fail = t => { er.textContent = t; er.classList.remove('hidden'); ok.classList.add('hidden'); };
+  const who = $('who').value.trim(), what = $('what').value.trim();
+  if($('dTrap').value) return;                       // пастка для ботів
+  if(!who || !what) return fail('Заповніть обидва поля: без імені й суті справу відкрити неможливо.');
+  er.classList.add('hidden'); btn.disabled = true;
+  try {
+    const img = window._dnP ? ((await window._dnP) || '') : '';
+    await fapi('POST', '/denunciations', { who, text: what, img });
+    ok.textContent = `Донос на «${who}» прийнято до архіву СБУ. Автора встановлено не буде. Дякуємо за пильність.`;
+    ok.classList.remove('hidden'); e.target.reset(); window._dnP = null; $('dPrev').classList.add('hidden');
+  } catch(err){ fail(err instanceof TypeError ? 'Сервер недоступний: донос не відправлено. Запустіть node server.js.' : err.message); }
+  btn.disabled = false;
 });
 
 /* ===== АДМІНКА ===== */
@@ -369,13 +398,14 @@ function refreshAuth(){
   g('authBar').innerHTML = session
     ? `<span class="text-xs text-green-400">Авторизовано як ${esc(session.name)}</span>
        <button data-act="add" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-3 py-1">+ Додати нового фігуранта</button>
+       <button data-act="dn" class="border border-red-600 text-red-500 hover:bg-red-600 hover:text-white text-xs font-bold px-3 py-1">Секретні доноси (Адмін)<span id="dnBadge"></span></button>
        <button data-act="logout" class="border border-gray-500 text-gray-300 text-xs px-3 py-1">Вийти</button>`
     : `<button data-act="login" class="border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black text-xs font-bold px-3 py-1">Вхід для оперативників / Адмін</button>`;
-  render();
+  render(); setBadge(); if(session) loadDn().catch(()=>{});
 }
 function logout(expired){
   if(session && !expired) fapi('POST','/logout').catch(()=>{});
-  session = null; try { localStorage.removeItem('mirotvorets_admin'); } catch(e){}
+  session = null; dnItems = []; hide('dnModal'); try { localStorage.removeItem('mirotvorets_admin'); } catch(e){}
   refreshAuth();
 }
 const show = id => { g(id).classList.remove('hidden'); document.body.style.overflow='hidden'; };
@@ -444,13 +474,38 @@ g('figForm').addEventListener('submit', async e => {
 document.addEventListener('click', e => {
   const a = e.target.closest('[data-act]'), ed = e.target.closest('[data-edit]'), dl = e.target.closest('[data-delfig]'), cl = e.target.closest('[data-close]');
   if(cl) hide(cl.dataset.close);
-  if(e.target.id==='loginModal' || e.target.id==='figModal') hide(e.target.id);
-  if(a){ if(a.dataset.act==='login'){ show('loginModal'); g('lLogin').focus(); } if(a.dataset.act==='add') openFig(); if(a.dataset.act==='logout') logout(); }
+  if(['loginModal','figModal','dnModal'].includes(e.target.id)) hide(e.target.id);
+  if(a){ if(a.dataset.act==='login'){ show('loginModal'); g('lLogin').focus(); } if(a.dataset.act==='add') openFig(); if(a.dataset.act==='logout') logout(); if(a.dataset.act==='dn') openDn(); }
   if(ed && session) openFig(ed.dataset.edit);
   if(dl && session && confirm('Видалити цього фігуранта з бази для всіх відвідувачів?'))
     fapi('DELETE','/figures/'+dl.dataset.delfig).then(loadFigures).catch(err => alert(err.message));
 });
-document.addEventListener('keydown', e => { if(e.key==='Escape'){ hide('loginModal'); hide('figModal'); } });
+document.addEventListener('keydown', e => { if(e.key==='Escape'){ hide('loginModal'); hide('figModal'); hide('dnModal'); } });
+
+/* ===== АРХІВ ДОНОСІВ (адмін) ===== */
+let dnItems = [];
+const fmtDate = s => { try { return new Date(s).toLocaleString('uk-UA'); } catch(e){ return s; } };
+function setBadge(){ const b = document.getElementById('dnBadge'); if(b){ const n = dnItems.filter(x => !x.archived).length; b.textContent = n ? ' (' + n + ')' : ''; } }
+function loadDn(){ return fapi('GET','/denunciations').then(l => { dnItems = Array.isArray(l) ? l : []; setBadge(); renderDn(); }); }
+function renderDn(){
+  g('dnCount').textContent = dnItems.length ? 'Усього: ' + dnItems.length + ' · нових: ' + dnItems.filter(x => !x.archived).length : '';
+  g('dnList').innerHTML = dnItems.length ? dnItems.map(d => `<article class="border ${d.archived?'border-gray-700 opacity-60':'border-red-600'} bg-black/40">
+    ${/^data:image\//.test(d.img||'') ? `<img src="${esc(d.img)}" alt="Прикріплене фото" class="w-full max-h-72 object-contain bg-black">` : ''}
+    <div class="p-4"><div class="flex flex-wrap justify-between gap-2 text-xs mb-2">
+      <span class="text-yellow-500 font-bold">ФІГУРАНТ: ${esc(d.who)}</span>
+      <span class="text-gray-400">${esc(fmtDate(d.date))}${d.archived ? ' · В АРХІВІ' : ''}</span></div>
+      <p class="text-sm text-gray-300 whitespace-pre-line break-words">${esc(d.text)}</p>
+      <div class="flex gap-2 mt-3 text-xs">
+        <button data-dn-arch="${esc(d.id)}" class="border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black px-3 py-1">${d.archived ? 'Повернути з архіву' : 'Архівувати'}</button>
+        <button data-dn-del="${esc(d.id)}" class="border border-red-600 text-red-500 hover:bg-red-600 hover:text-white px-3 py-1">Видалити</button></div></div></article>`).join('')
+    : '<p class="text-center text-yellow-500 py-10 border border-dashed border-yellow-600">Доносів поки немає. Громадяни мовчать — підозріло.</p>';
+}
+function openDn(){ show('dnModal'); renderDn(); loadDn().catch(err => { g('dnList').innerHTML = '<p class="text-red-500 text-sm">' + esc(err.message) + '</p>'; }); }
+g('dnList').addEventListener('click', e => {
+  const a = e.target.closest('[data-dn-arch]'), d = e.target.closest('[data-dn-del]');
+  if(a){ const it = dnItems.find(x => x.id === a.dataset.dnArch); if(it) fapi('PUT','/denunciations/'+it.id,{ archived: !it.archived }).then(loadDn).catch(er => alert(er.message)); }
+  if(d && confirm('Видалити цей донос назавжди?')) fapi('DELETE','/denunciations/'+d.dataset.dnDel).then(loadDn).catch(er => alert(er.message));
+});
 
 renderFilters(); refreshAuth(); showTab('home');
 if(/^https?:/.test(location.protocol) || window.NEWS_API){ loadFigures(); setInterval(loadFigures, 20000); }

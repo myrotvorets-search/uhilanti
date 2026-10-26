@@ -5,5 +5,8 @@
   "main": "server.js",
   "scripts": { "start": "node server.js" },
   "engines": { "node": ">=18" },
-  "dependencies": { "mongodb": "^6.8.0" }
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongodb": "^6.8.0"
+  }
 }
